@@ -23,8 +23,8 @@ This repository contains a FastAPI application for semantic text processing usin
 1. **Clone the repository:**
 
    ```bash
-   git clone https://github.com/yourusername/yourrepository.git
-   cd yourrepository
+   git clone https://github.com/avinash-mall/rag-elastic-api.git
+   cd rag-elastic-api
    ```
 
 2. **Create and activate a virtual environment:**
