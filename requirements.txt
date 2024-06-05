@@ -1,0 +1,7 @@
+fastapi-offline
+uvicorn
+requests
+python-dotenv
+spacy
+pydantic
+elasticsearch
