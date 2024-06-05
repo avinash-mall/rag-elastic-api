@@ -4,6 +4,7 @@ import requests
 import logging
 from dotenv import load_dotenv
 from typing import List, Optional, Annotated
+from fastapi_offline import FastAPIOffline
 from fastapi import Body, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
@@ -172,7 +173,7 @@ def search_embedding(index, query_embedding, num_results=10):
         return None
 
 # FastAPI app setup
-app = FastAPI()
+app = FastAPIOffline()
 
 app.add_middleware(
     CORSMiddleware,
