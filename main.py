@@ -2,15 +2,17 @@ import os
 import hashlib
 import requests
 import logging
-from dotenv import load_dotenv
 from typing import List, Optional, Annotated
 from fastapi_offline import FastAPIOffline
-from fastapi import Body, FastAPI, HTTPException, Request
+from fastapi import Body, FastAPI, HTTPException, Request, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from elasticsearch import Elasticsearch
+from PyPDF2 import PdfReader
+from docx import Document
 
 # Load environment variables from .env file
+from dotenv import load_dotenv
 load_dotenv()
 
 # Configure logging
@@ -274,6 +276,47 @@ async def list_indexes():
     except Exception as e:
         logger.error(f"Error listing indexes: {e}")
         raise HTTPException(status_code=500, detail="Error listing indexes")
+
+# File upload and processing endpoint
+@app.post("/api/upload/")
+async def upload_file(index_name: str, file: UploadFile = File(...)):
+    if file.content_type == "application/pdf":
+        text = extract_text_from_pdf(file)
+    elif file.content_type in ["application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"]:
+        text = extract_text_from_word(file)
+    elif file.content_type == "text/plain":
+        text = await file.read()
+        text = text.decode('utf-8')
+    else:
+        raise HTTPException(status_code=400, detail="Unsupported file type")
+
+    chunks = split_text_semantically(text)
+
+    for chunk in chunks:
+        if chunk and len(chunk) > 0:
+            embedding = ollama_service.generate_embedding(chunk)
+            doc_id = generate_unique_id(chunk)
+            body = {
+                "text": chunk,
+                "embedding": embedding
+            }
+            index_document(index_name, doc_id, body)
+
+    return {"message": "File processed and indexed successfully"}
+
+def extract_text_from_pdf(file):
+    reader = PdfReader(file.file)
+    text = ""
+    for page in reader.pages:
+        text += page.extract_text()
+    return text
+
+def extract_text_from_word(file):
+    doc = Document(file.file)
+    text = ""
+    for para in doc.paragraphs:
+        text += para.text
+    return text
 
 if __name__ == "__main__":
     import uvicorn
