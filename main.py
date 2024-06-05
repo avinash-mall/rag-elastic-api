@@ -108,7 +108,7 @@ es_password = os.getenv('ES_PASSWORD')
 
 # Initialize Elasticsearch with authentication
 es = Elasticsearch(
-    [es_host_url],
+    hosts=[es_host_url],
     http_auth=(es_username, es_password)
 )
 
@@ -240,6 +240,39 @@ async def query(query_request: Annotated[QueryRequest, Body(embed=True)]):
     logger.info(f"Final response text: {response_text}")  # Log the final response
 
     return {"response": response_text}
+
+# Elasticsearch index management endpoints
+@app.post("/api/create_index/")
+async def create_index(index_name: Annotated[str, Body(embed=True)]):
+    try:
+        if es.indices.exists(index=index_name):
+            raise HTTPException(status_code=400, detail="Index already exists")
+        es.indices.create(index=index_name)
+        return {"message": f"Index '{index_name}' created successfully"}
+    except Exception as e:
+        logger.error(f"Error creating index: {e}")
+        raise HTTPException(status_code=500, detail="Error creating index")
+
+@app.delete("/api/delete_index/")
+async def delete_index(index_name: Annotated[str, Body(embed=True)]):
+    try:
+        if not es.indices.exists(index=index_name):
+            raise HTTPException(status_code=404, detail="Index not found")
+        es.indices.delete(index=index_name)
+        return {"message": f"Index '{index_name}' deleted successfully"}
+    except Exception as e:
+        logger.error(f"Error deleting index: {e}")
+        raise HTTPException(status_code=500, detail="Error deleting index")
+
+@app.get("/api/list_indexes/")
+async def list_indexes():
+    try:
+        indexes = es.indices.get_alias(index="*")
+        filtered_indexes = [index for index in indexes.keys() if not index.startswith('.')]
+        return {"indexes": filtered_indexes}
+    except Exception as e:
+        logger.error(f"Error listing indexes: {e}")
+        raise HTTPException(status_code=500, detail="Error listing indexes")
 
 if __name__ == "__main__":
     import uvicorn
