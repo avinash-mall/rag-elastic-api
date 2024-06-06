@@ -21,3 +21,7 @@ ollama_service = OllamaService(
     embed_model=os.getenv("OLLAMA_EMBED_MODEL"),
     chat_model=os.getenv("OLLAMA_CHAT_MODEL")
 )
+
+# Read NUM_RESULTS and INSTRUCTION_PROMPT from .env file
+num_results = int(os.getenv("NUM_RESULTS", 10))
+instruction_prompt = os.getenv("INSTRUCTION_PROMPT", "Provide a well-reasoned and informative response to the query.")
