@@ -60,7 +60,7 @@ Replace the placeholder values such as `<your_ollama_embedding_endpoint>`, `<you
 1. **Start the FastAPI server:**
 
    ```bash
-   uvicorn main:app --host 0.0.0.0 --port 8081
+   uvicorn app.main:app --host 0.0.0.0 --port 8081
    ```
 
 2. **Access the API documentation:**
