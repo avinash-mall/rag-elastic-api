@@ -1,8 +1,8 @@
 # app/routes/upload.py
 
-from fastapi import APIRouter, HTTPException, UploadFile, File
-from app.dependencies import ollama_service, es
-from app.utils import split_text_semantically, generate_unique_id, extract_text_from_pdf, extract_text_from_word
+from fastapi import APIRouter, UploadFile, File, HTTPException
+from app.dependencies import model, es
+from app.utils import split_text_semantically, generate_unique_id, extract_text_from_pdf, extract_text_from_word, clean_text
 
 router = APIRouter()
 
@@ -17,10 +17,13 @@ async def upload_file(index_name: str, file: UploadFile = File(...)):
     else:
         raise HTTPException(status_code=400, detail="Unsupported file type")
 
-    for chunk in split_text_semantically(text):
+    clean_text_content = clean_text(text)
+
+    for chunk in split_text_semantically(clean_text_content):
         if chunk:
             doc_id = generate_unique_id(chunk)
-            body = {"text": chunk, "embedding": ollama_service.generate_embedding(chunk)}
+            embedding = model.encode(chunk).tolist()
+            body = {"text": chunk, "embedding": embedding}
             es.index(index=index_name, id=doc_id, body=body)
 
     return {"message": "File processed and indexed successfully"}
