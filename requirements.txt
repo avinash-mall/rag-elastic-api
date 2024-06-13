@@ -8,3 +8,6 @@ python_docx
 Requests
 spacy
 uvicorn
+sentence_transformers
+llama_index[all]
+semantic_text_splitter
