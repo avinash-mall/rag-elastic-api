@@ -15,7 +15,13 @@ This repository contains a FastAPI application for semantic text processing usin
 ### Prerequisites
 
 - Python 3.7+
-- Elasticsearch instance
+- Elasticsearch instance (You can use deviantony's repo for easy setup)
+   ```bash
+   git clone https://github.com/deviantony/docker-elk.git
+   cd docker-elk
+   docker compose up setup
+   docker compose up -d
+   ```
 - Ollama running with encoding model and LLM
 
 ### Installation
